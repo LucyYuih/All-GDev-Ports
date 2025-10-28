@@ -1,0 +1,24 @@
+{
+  "projects": [
+    {
+      "name": "Alice_ Mad Hopeless Demo Friday Night Funkin Gdev Engine",
+      "folder": "alice_-mad-hopeless-demo-friday-night-funkin-gdev-engine",
+      "has_icon": true
+    },
+    {
+      "name": "Friday Night Funkin Peculiar Colors Gdev Engine",
+      "folder": "friday-night-funkin-peculiar-colors-gdev-engine",
+      "has_icon": true
+    },
+    {
+      "name": "Friday Night Funkin Ski Mod Gdev Engine",
+      "folder": "friday-night-funkin-ski-mod-gdev-engine",
+      "has_icon": true
+    },
+    {
+      "name": "Friday Night Funkin Vs Kapi Arcade Showdown Gdev Engine",
+      "folder": "friday-night-funkin-vs-kapi-arcade-showdown-gdev-engine",
+      "has_icon": true
+    }
+  ]
+}
