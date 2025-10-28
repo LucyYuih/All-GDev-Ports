@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Jogos - GDevelop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .menu-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            animation: fadeIn 0.8s ease-in 0.2s both;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-card-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .game-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover .game-card-image img {
+            transform: scale(1.1);
+        }
+
+        .game-card-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-card-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .game-card-description {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+
+        .game-card-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .game-card-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .game-card-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Game View Styles */
+        .game-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            flex-direction: column;
+        }
+
+        .game-view.active {
+            display: flex;
+        }
+
+        .game-header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .game-header h2 {
+            font-size: 1.5em;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .control-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-button:active {
+            transform: scale(0.95);
+        }
+
+        .game-container {
+            flex-grow: 1;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .game-iframe.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2000;
+        }
+
+        .loading {
+            color: white;
+            font-size: 1.2em;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+        }
+
+        .empty-state h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .games-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 20px;
+            }
+
+            .game-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .game-controls {
+                width: 100%;
+            }
+
+            .control-button {
+                flex: 1;
+            }
+        }
+
+        /* Fullscreen styles */
+        .game-view.fullscreen .game-header {
+            display: none;
+        }
+
+        .game-view.fullscreen .game-container {
+            height: 100vh;
+        }
+
+        .fullscreen-toggle {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .fullscreen-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .fullscreen-exit-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            z-index: 2001;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .fullscreen-exit-button.active {
+            display: block;
+        }
+
+        .fullscreen-exit-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Principal -->
+    <div class="menu-container" id="menuContainer">
+        <div class="header">
+            <h1>🎮 Meus Jogos</h1>
+            <p>Escolha um jogo para jogar</p>
+        </div>
+        <div class="games-grid" id="gamesGrid">
+            <!-- Cards serão inseridos aqui via JavaScript -->
+        </div>
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <h2>Nenhum jogo encontrado</h2>
+            <p>Adicione pastas de projetos GDevelop para começar</p>
+        </div>
+    </div>
+
+    <!-- Visualizador de Jogo -->
+    <div class="game-view" id="gameView">
+        <div class="game-header">
+            <h2 id="gameTitle">Carregando...</h2>
+            <div class="game-controls">
+                <button class="control-button" id="backButton">← Voltar ao Menu</button>
+                <button class="fullscreen-toggle" id="fullscreenButton">⛶ Fullscreen</button>
+            </div>
+        </div>
+        <div class="game-container">
+            <iframe class="game-iframe" id="gameIframe"></iframe>
+        </div>
+    </div>
+
+    <!-- Botão de Sair do Fullscreen -->
+    <button class="fullscreen-exit-button" id="fullscreenExitButton">← Voltar ao Menu</button>
+
+    <script>
+        // Função para carregar projetos dinamicamente
+        async function loadProjects() {
+            try {
+                // Tenta carregar o arquivo projects.json
+                const response = await fetch('projects.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    renderProjects(data.projects || []);
+                    return;
+                }
+            } catch (error) {
+                console.log('projects.json não encontrado, tentando detecção automática...');
+            }
+
+            // Se projects.json não existir, tenta detecção automática
+            try {
+                const projects = await detectProjectsLocally();
+                renderProjects(projects);
+            } catch (error) {
+                console.error('Erro ao detectar projetos:', error);
+                renderProjects([]);
+            }
+        }
+
+        // Função para detectar projetos localmente
+        async function detectProjectsLocally() {
+            const projects = [];
+            
+            // Lista de pastas conhecidas (você pode adicionar mais aqui)
+            const potentialFolders = [
+                'Friday-Night-Funkin--Ski-Mod---GDev-Edition',
+                'skyforccd',
+                'skymad',
+                'sporty-ski-hard',
+                'astcene',
+                'cookie',
+                'SPRITES'
+            ];
+
+            // Tenta verificar cada pasta
+            for (const folder of potentialFolders) {
+                try {
+                    const response = await fetch(`${folder}/index.html`, { method: 'HEAD' });
+                    if (response.ok) {
+                        projects.push({
+                            name: formatProjectName(folder),
+                            folder: folder
+                        });
+                    }
+                } catch (error) {
+                    // Pasta não encontrada, continua
+                }
+            }
+
+            return projects;
+        }
+
+        function formatProjectName(folderName) {
+            return folderName
+                .split('-')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        function renderProjects(projects) {
+            const gamesGrid = document.getElementById('gamesGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (projects.length === 0) {
+                gamesGrid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            gamesGrid.innerHTML = projects.map(project => `
+                <div class="game-card">
+                    <div class="game-card-image">
+                        <img src="${project.folder}/android-icon-192.png" alt="${project.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22%3E%3Crect fill=%22%23667eea%22 width=%22192%22 height=%22192%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-size=%2248%22 font-weight=%22bold%22%3E🎮%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="game-card-content">
+                        <h3 class="game-card-title">${project.name}</h3>
+                        <p class="game-card-description">Clique em jogar para começar</p>
+                        <button class="game-card-button" onclick="playGame('${project.folder}', '${project.name}')">
+                            ▶ Jogar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function playGame(folder, name) {
+            const gameView = document.getElementById('gameView');
+            const gameIframe = document.getElementById('gameIframe');
+            const gameTitle = document.getElementById('gameTitle');
+
+            // Carrega o arquivo index.html do projeto
+            gameIframe.src = `${folder}/index.html`;
+            gameTitle.textContent = name;
+
+            gameView.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function backToMenu() {
+            const gameView = document.getElementById('gameView');
+            const gameIframe = document.getElementById('gameIframe');
+            const fullscreenButton = document.getElementById('fullscreenButton');
+            const fullscreenExitButton = document.getElementById('fullscreenExitButton');
+
+            gameView.classList.remove('active');
+            gameView.classList.remove('fullscreen');
+            gameIframe.classList.remove('fullscreen');
+            fullscreenButton.textContent = '⛶ Fullscreen';
+            fullscreenExitButton.classList.remove('active');
+            gameIframe.src = '';
+            document.body.style.overflow = 'auto';
+
+            // Sai do fullscreen do navegador se estiver ativo
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        }
+
+        function toggleFullscreen() {
+            const gameView = document.getElementById('gameView');
+            const gameIframe = document.getElementById('gameIframe');
+            const fullscreenButton = document.getElementById('fullscreenButton');
+            const fullscreenExitButton = document.getElementById('fullscreenExitButton');
+            const gameHeader = document.querySelector('.game-header');
+
+            if (gameView.classList.contains('fullscreen')) {
+                // Sair do fullscreen
+                gameView.classList.remove('fullscreen');
+                gameIframe.classList.remove('fullscreen');
+                fullscreenButton.textContent = '⛶ Fullscreen';
+                fullscreenExitButton.classList.remove('active');
+                gameHeader.style.display = 'flex';
+
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
+            } else {
+                // Entrar no fullscreen
+                gameView.classList.add('fullscreen');
+                gameIframe.classList.add('fullscreen');
+                fullscreenButton.textContent = '⛶ Sair Fullscreen';
+                fullscreenExitButton.classList.add('active');
+                gameHeader.style.display = 'none';
+
+                // Tenta ativar fullscreen do navegador
+                gameIframe.requestFullscreen().catch(err => {
+                    console.log('Fullscreen do navegador não disponível:', err);
+                });
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('backButton').addEventListener('click', backToMenu);
+        document.getElementById('fullscreenButton').addEventListener('click', toggleFullscreen);
+        document.getElementById('fullscreenExitButton').addEventListener('click', backToMenu);
+
+        // Carrega os projetos ao iniciar
+        loadProjects();
+
+        // Suporta ESC para sair do fullscreen
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const gameView = document.getElementById('gameView');
+                if (gameView.classList.contains('active')) {
+                    if (gameView.classList.contains('fullscreen')) {
+                        toggleFullscreen();
+                    } else {
+                        backToMenu();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
