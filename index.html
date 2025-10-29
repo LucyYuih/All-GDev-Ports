@@ -1,383 +1,221 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Meus Jogos - GDevelop</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            color: #222;
         }
 
-        .menu-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .menu-container { max-width: 1200px; margin: 0 auto; }
 
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 50px;
-            animation: fadeIn 0.6s ease-in;
-        }
+        .header { text-align: center; color: white; margin-bottom: 30px; animation: fadeIn .5s ease-in; }
+        .header h1 { font-size: 2.6rem; margin-bottom: 6px; text-shadow: 1px 1px 3px rgba(0,0,0,.2); }
+        .header p { font-size: 1rem; opacity: .95; }
 
-        .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
+        /* Grid estilo launcher mobile */
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-            animation: fadeIn 0.8s ease-in 0.2s both;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 18px;
+            justify-items: center;
+            animation: fadeIn .6s ease-in .1s both;
         }
 
         .game-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-            cursor: pointer;
+            width: 120px;
+            height: 150px;
+            background: transparent;
+            border-radius: 16px;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform .18s ease, box-shadow .18s ease;
         }
 
-        .game-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
+        .game-card:active { transform: translateY(2px) scale(.995); }
+        .game-card:hover { transform: translateY(-6px); }
 
-        .game-card-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .app-icon {
+            width: 96px;
+            height: 96px;
+            border-radius: 22px;
+            overflow: hidden;
+            background: linear-gradient(135deg,#ffffff22,#00000011);
+            box-shadow: 0 8px 20px rgba(0,0,0,.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
         }
 
-        .game-card-image img {
+        .app-icon img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            display: block;
         }
 
-        .game-card:hover .game-card-image img {
-            transform: scale(1.1);
-        }
-
-        .game-card-content {
-            padding: 20px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .game-card-title {
-            font-size: 1.5em;
-            color: #333;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .game-card-description {
-            color: #666;
-            font-size: 0.95em;
-            margin-bottom: 15px;
-            flex-grow: 1;
-        }
-
-        .game-card-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .app-name {
+            margin-top: 4px;
+            text-align: center;
             color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 1em;
+            font-size: .95rem;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
+            text-shadow: 0 1px 2px rgba(0,0,0,.5);
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 120px;
         }
 
-        .game-card-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
+        .empty-state { text-align: center; color: white; padding: 60px 20px; }
+        .empty-state h2 { font-size: 1.6rem; margin-bottom: 8px; }
+        .empty-state p { font-size: 1rem; opacity: .95; }
 
-        .game-card-button:active {
-            transform: scale(0.98);
-        }
-
-        /* Game View Styles */
+        /* Game View */
         .game-view {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: #000;
             z-index: 1000;
             flex-direction: column;
         }
-
-        .game-view.active {
-            display: flex;
-        }
+        .game-view.active { display: flex; }
 
         .game-header {
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px 20px;
+            background: rgba(0,0,0,.8);
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: white;
         }
+        .game-header h2 { font-size: 1.05rem; margin-left: 4px; }
 
-        .game-header h2 {
-            font-size: 1.5em;
-        }
-
-        .game-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .control-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .game-controls { display: flex; gap: 8px; align-items: center; }
+        .control-button, .fullscreen-toggle {
+            background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 8px 10px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 0.9em;
+            transition: transform .12s ease;
+            font-size: .9rem;
         }
+        .control-button:active, .fullscreen-toggle:active { transform: scale(.98); }
 
-        .control-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
+        .game-container { flex-grow: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #000; }
 
-        .control-button:active {
-            transform: scale(0.95);
-        }
+        .game-iframe { width: 100%; height: 100%; border: none; }
 
-        .game-container {
-            flex-grow: 1;
-            overflow: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .game-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
+        /* Fullscreen handling */
         .game-iframe.fullscreen {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             z-index: 2000;
         }
-
-        .loading {
-            color: white;
-            font-size: 1.2em;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .empty-state {
-            text-align: center;
-            color: white;
-            padding: 60px 20px;
-        }
-
-        .empty-state h2 {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-
-        .empty-state p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        /* Responsivo */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .games-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 20px;
-            }
-
-            .game-header {
-                flex-direction: column;
-                gap: 10px;
-                align-items: flex-start;
-            }
-
-            .game-controls {
-                width: 100%;
-            }
-
-            .control-button {
-                flex: 1;
-            }
-        }
-
-        /* Fullscreen styles */
-        .game-view.fullscreen .game-header {
-            display: none;
-        }
-
-        .game-view.fullscreen .game-container {
-            height: 100vh;
-        }
-
-        .fullscreen-toggle {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .fullscreen-toggle:hover {
-            transform: scale(1.05);
-        }
+        .game-view.fullscreen .game-header { display: none; }
+        .game-view.fullscreen .game-container { height: 100vh; }
 
         .fullscreen-exit-button {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            top: 18px;
+            right: 18px;
+            background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
             z-index: 2001;
             display: none;
-            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .fullscreen-exit-button.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .fullscreen-exit-button.active {
-            display: block;
-        }
-
-        .fullscreen-exit-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        /* Responsivo */
+        @media (max-width: 520px) {
+            .games-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 14px; }
+            .game-card { width: 100px; height: 140px; }
+            .app-icon { width: 80px; height: 80px; border-radius: 18px; }
         }
     </style>
 </head>
 <body>
-    <!-- Menu Principal -->
     <div class="menu-container" id="menuContainer">
         <div class="header">
             <h1>🎮 Meus Jogos</h1>
-            <p>Escolha um jogo para jogar</p>
+            <p>Escolha um jogo pra abrir</p>
         </div>
-        <div class="games-grid" id="gamesGrid">
-            <!-- Cards serão inseridos aqui via JavaScript -->
-        </div>
+
+        <div class="games-grid" id="gamesGrid"></div>
+
         <div class="empty-state" id="emptyState" style="display: none;">
             <h2>Nenhum jogo encontrado</h2>
             <p>Adicione pastas de projetos GDevelop para começar</p>
         </div>
     </div>
 
-    <!-- Visualizador de Jogo -->
-    <div class="game-view" id="gameView">
-        <div class="game-header">
+    <div class="game-view" id="gameView" aria-hidden="true">
+        <div class="game-header" id="gameHeader">
             <h2 id="gameTitle">Carregando...</h2>
-            <div class="game-controls">
+            <div class="game-controls" id="gameControls">
                 <button class="control-button" id="backButton">← Voltar ao Menu</button>
                 <button class="fullscreen-toggle" id="fullscreenButton">⛶ Fullscreen</button>
             </div>
         </div>
+
         <div class="game-container">
-            <iframe class="game-iframe" id="gameIframe"></iframe>
+            <iframe class="game-iframe" id="gameIframe" title="Area do jogo"></iframe>
         </div>
     </div>
 
-    <!-- Botão de Sair do Fullscreen -->
     <button class="fullscreen-exit-button" id="fullscreenExitButton">← Voltar ao Menu</button>
 
     <script>
-        // Função para carregar projetos dinamicamente
+        // --- Carregamento de projetos (mantive sua lógica de fallback) ---
         async function loadProjects() {
             try {
-                // Tenta carregar o arquivo projects.json
                 const response = await fetch('projects.json');
                 if (response.ok) {
                     const data = await response.json();
                     renderProjects(data.projects || []);
                     return;
                 }
-            } catch (error) {
+            } catch (err) {
                 console.log('projects.json não encontrado, tentando detecção automática...');
             }
 
-            // Se projects.json não existir, tenta detecção automática
             try {
                 const projects = await detectProjectsLocally();
                 renderProjects(projects);
-            } catch (error) {
-                console.error('Erro ao detectar projetos:', error);
+            } catch (err) {
+                console.error('Erro ao detectar projetos:', err);
                 renderProjects([]);
             }
         }
 
-        // Função para detectar projetos localmente
         async function detectProjectsLocally() {
             const projects = [];
-            
-            // Lista de pastas conhecidas (você pode adicionar mais aqui)
             const potentialFolders = [
                 'Friday-Night-Funkin--Ski-Mod---GDev-Edition',
                 'skyforccd',
@@ -388,132 +226,155 @@
                 'SPRITES'
             ];
 
-            // Tenta verificar cada pasta
             for (const folder of potentialFolders) {
                 try {
                     const response = await fetch(`${folder}/index.html`, { method: 'HEAD' });
                     if (response.ok) {
-                        projects.push({
-                            name: formatProjectName(folder),
-                            folder: folder
-                        });
+                        projects.push({ name: formatProjectName(folder), folder });
                     }
-                } catch (error) {
-                    // Pasta não encontrada, continua
+                } catch (e) {
+                    // ignora
                 }
             }
-
             return projects;
         }
 
         function formatProjectName(folderName) {
             return folderName
-                .split('-')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .split(/[-_]+/)
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
                 .join(' ');
         }
 
+        // --- Renderização estilo app launcher ---
         function renderProjects(projects) {
             const gamesGrid = document.getElementById('gamesGrid');
             const emptyState = document.getElementById('emptyState');
 
-            if (projects.length === 0) {
+            if (!projects || projects.length === 0) {
                 gamesGrid.style.display = 'none';
                 emptyState.style.display = 'block';
                 return;
             }
 
-            gamesGrid.innerHTML = projects.map(project => `
-                <div class="game-card">
-                    <div class="game-card-image">
-                        <img src="${project.folder}/android-icon-192.png" alt="${project.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22%3E%3Crect fill=%22%23667eea%22 width=%22192%22 height=%22192%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-size=%2248%22 font-weight=%22bold%22%3E🎮%3C/text%3E%3C/svg%3E'">
+            emptyState.style.display = 'none';
+            gamesGrid.style.display = 'grid';
+
+            gamesGrid.innerHTML = projects.map(p => `
+                <div class="game-card" data-folder="${p.folder}" data-name="${p.name}" role="button" tabindex="0" aria-label="${p.name}">
+                    <div class="app-icon">
+                        <img src="${p.folder}/android-icon-192.png" alt="${p.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22%3E%3Crect fill=%22%23667eea%22 width=%22192%22 height=%22192%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-size=%2248%22 font-weight=%22bold%22%3E🎮%3C/text%3E%3C/svg%3E'">
                     </div>
-                    <div class="game-card-content">
-                        <h3 class="game-card-title">${project.name}</h3>
-                        <p class="game-card-description">Clique em jogar para começar</p>
-                        <button class="game-card-button" onclick="playGame('${project.folder}', '${project.name}')">
-                            ▶ Jogar
-                        </button>
-                    </div>
+                    <div class="app-name">${p.name}</div>
                 </div>
             `).join('');
+
+            // adiciona listeners aos cards depois de renderizar
+            document.querySelectorAll('.game-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const folder = card.dataset.folder;
+                    const name = card.dataset.name;
+                    playGame(folder, name);
+                });
+                // acessibilidade: abertura com Enter
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        card.click();
+                    }
+                });
+            });
         }
 
+        // --- Abrir jogo ---
         function playGame(folder, name) {
             const gameView = document.getElementById('gameView');
             const gameIframe = document.getElementById('gameIframe');
             const gameTitle = document.getElementById('gameTitle');
+            const gameHeader = document.getElementById('gameHeader');
+            const fullscreenExitButton = document.getElementById('fullscreenExitButton');
 
-            // Carrega o arquivo index.html do projeto
+            // garante que header esteja visível (corrige estado anterior escondido)
+            gameHeader.style.display = 'flex';
+
             gameIframe.src = `${folder}/index.html`;
             gameTitle.textContent = name;
 
-            gameView.classList.add('active');
+            // limpar qualquer estado de fullscreen residual
+            gameView.classList.remove('fullscreen');
+            gameIframe.classList.remove('fullscreen');
+            fullscreenExitButton.classList.remove('active');
             document.body.style.overflow = 'hidden';
+            gameView.classList.add('active');
+            gameView.setAttribute('aria-hidden', 'false');
         }
 
+        // --- Voltar ao menu ---
         function backToMenu() {
             const gameView = document.getElementById('gameView');
             const gameIframe = document.getElementById('gameIframe');
             const fullscreenButton = document.getElementById('fullscreenButton');
             const fullscreenExitButton = document.getElementById('fullscreenExitButton');
+            const gameHeader = document.getElementById('gameHeader');
 
-            gameView.classList.remove('active');
-            gameView.classList.remove('fullscreen');
+            // restaura todos os estados visuais
+            gameView.classList.remove('active', 'fullscreen');
             gameIframe.classList.remove('fullscreen');
             fullscreenButton.textContent = '⛶ Fullscreen';
             fullscreenExitButton.classList.remove('active');
             gameIframe.src = '';
             document.body.style.overflow = 'auto';
+            gameHeader.style.display = 'flex';
+            gameView.setAttribute('aria-hidden', 'true');
 
             // Sai do fullscreen do navegador se estiver ativo
             if (document.fullscreenElement) {
-                document.exitFullscreen();
+                document.exitFullscreen().catch(()=>{});
             }
         }
 
+        // --- Fullscreen toggle ---
         function toggleFullscreen() {
             const gameView = document.getElementById('gameView');
             const gameIframe = document.getElementById('gameIframe');
             const fullscreenButton = document.getElementById('fullscreenButton');
             const fullscreenExitButton = document.getElementById('fullscreenExitButton');
-            const gameHeader = document.querySelector('.game-header');
+            const gameHeader = document.getElementById('gameHeader');
 
             if (gameView.classList.contains('fullscreen')) {
-                // Sair do fullscreen
+                // sair fullscreen
                 gameView.classList.remove('fullscreen');
                 gameIframe.classList.remove('fullscreen');
                 fullscreenButton.textContent = '⛶ Fullscreen';
                 fullscreenExitButton.classList.remove('active');
                 gameHeader.style.display = 'flex';
-
                 if (document.fullscreenElement) {
-                    document.exitFullscreen();
+                    document.exitFullscreen().catch(()=>{});
                 }
             } else {
-                // Entrar no fullscreen
+                // entrar fullscreen
                 gameView.classList.add('fullscreen');
                 gameIframe.classList.add('fullscreen');
                 fullscreenButton.textContent = '⛶ Sair Fullscreen';
                 fullscreenExitButton.classList.add('active');
                 gameHeader.style.display = 'none';
 
-                // Tenta ativar fullscreen do navegador
-                gameIframe.requestFullscreen().catch(err => {
-                    console.log('Fullscreen do navegador não disponível:', err);
-                });
+                // tenta fullscreen nativo do iframe
+                if (gameIframe.requestFullscreen) {
+                    gameIframe.requestFullscreen().catch(err => {
+                        // se falhar, apenas continuamos com a UI em estado fullscreen
+                        console.log('requestFullscreen falhou:', err);
+                    });
+                }
             }
         }
 
-        // Event Listeners
+        // Event listeners principais
         document.getElementById('backButton').addEventListener('click', backToMenu);
         document.getElementById('fullscreenButton').addEventListener('click', toggleFullscreen);
         document.getElementById('fullscreenExitButton').addEventListener('click', backToMenu);
 
-        // Carrega os projetos ao iniciar
-        loadProjects();
-
-        // Suporta ESC para sair do fullscreen
+        // ESC para fechar fullscreen ou voltar
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 const gameView = document.getElementById('gameView');
@@ -526,6 +387,9 @@
                 }
             }
         });
+
+        // inicia
+        loadProjects();
     </script>
 </body>
 </html>
